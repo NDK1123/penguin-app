@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dự Đoán Loài Chim Cánh Cụt</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
+
+        :root {
+            --primary-color: #d2691e; /* Màu cam đậm */
+            --secondary-color: #ff8c00; /* Màu cam sáng */
+            --background-color: #f7f3f1;
+            --card-background: #ffffff;
+            --shadow-color: rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        .container {
+            display: flex;
+            max-width: 1200px;
+            width: 100%;
+            background-color: transparent;
+            box-shadow: 0 4px 20px var(--shadow-color);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .instructions,
+        .prediction-form,
+        .history {
+            flex: 1;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+        }
+
+        .instructions {
+            background-color: #ffe8d6; /* Tông màu cam nhạt */
+            order: 1; /* Sắp xếp ở vị trí đầu tiên */
+        }
+
+        .prediction-form {
+            background-color: var(--card-background);
+            order: 2; /* Sắp xếp ở vị trí thứ hai */
+        }
+        
+        .history {
+            background-color: #fff2e6; /* Tông màu cam nhạt hơn */
+            order: 3; /* Sắp xếp ở vị trí thứ ba */
+        }
+
+        .instructions h2, .history h2, .prediction-form h1 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 2.5em;
+            text-align: center;
+        }
+
+        .instructions .section {
+            margin-bottom: 20px;
+        }
+        
+        .instructions .section h3 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+        }
+        
+        .instructions ol, .instructions ul {
+            padding-left: 20px;
+            list-style: none;
+        }
+        
+        .instructions ol li {
+            background-color: #ffffff;
+            border-left: 5px solid var(--secondary-color);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            line-height: 1.6;
+            box-shadow: 0 2px 5px var(--shadow-color);
+        }
+        
+        .history .prediction-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 500px; /* Chiều cao tối đa cho danh sách */
+            overflow-y: auto; /* Thêm thanh cuộn dọc khi cần */
+        }
+
+        .history .prediction-list li {
+            background-color: #ffffff;
+            border-left: 5px solid var(--secondary-color);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 5px;
+            line-height: 1.6;
+            box-shadow: 0 2px 5px var(--shadow-color);
+        }
+
+        .prediction-form h1 {
+            text-align: center;
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 20px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        label {
+            font-weight: bold;
+            color: var(--primary-color);
+            margin-bottom: 5px;
+        }
+
+        input[type="text"], select {
+            padding: 12px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus, select:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+        }
+
+        button[type="submit"] {
+            padding: 15px;
+            background-color: var(--secondary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.3s, transform 0.2s;
+            margin-top: 20px;
+        }
+
+        button[type="submit"]:hover {
+            background-color: #e57c00;
+            transform: translateY(-2px);
+        }
+        
+        .result-box {
+            margin-top: 25px;
+            padding: 20px;
+            border-radius: 5px;
+            background-color: #fff2e6; /* Tông màu cam nhạt hơn */
+            border: 1px solid #ffcc99;
+            text-align: center;
+        }
+
+        .result-box h3 {
+            color: var(--primary-color);
+            margin: 0;
+        }
+
+        .error-message {
+            color: #e74c3c;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 992px) {
+            .container {
+                flex-direction: column;
+            }
+            .instructions, .prediction-form, .history {
+                order: initial;
+                width: 100%;
+                padding: 20px;
+            }
+            .form-row {
+                flex-direction: column;
+                gap: 0;
+            }
+            .history .prediction-list {
+                max-height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <!-- Cột bên trái: Hướng dẫn sử dụng -->
+    <div class="instructions">
+        <div class="section">
+            <h2>Hướng dẫn sử dụng</h2>
+            <ol>
+                <li>
+                    <strong>Bước 1:</strong> Nhập các thông số của chim cánh cụt vào các ô. Đảm bảo các giá trị là số (ví dụ: 45.6).
+                </li>
+                <li>
+                    <strong>Bước 2:</strong> Chọn Đảo, Năm và Giới tính của chim từ danh sách thả xuống.
+                </li>
+                <li>
+                    <strong>Bước 3:</strong> Bấm nút "Dự đoán" để gửi dữ liệu đến mô hình.
+                </li>
+                <li>
+                    <strong>Bước 4:</strong> Kết quả dự đoán sẽ được hiển thị ngay bên dưới nút "Dự đoán".
+                </li>
+                <li>
+                    <strong>Bước 5:</strong> Có thể xem lại được lịch sử dự đoán.
+                </li>
+            </ol>
+        </div>
+    </div>
+    
+    <!-- Cột giữa: Công cụ dự đoán -->
+    <div class="prediction-form">
+        <h1>Công Cụ Dự Đoán Loài Chim Cánh Cụt</h1>
+        <form action="/predict" method="post">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="bill_length_mm">Chiều dài mỏ (mm):</label>
+                    <input type="text" id="bill_length_mm" name="bill_length" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="bill_depth_mm">Chiều sâu mỏ (mm):</label>
+                    <input type="text" id="bill_depth_mm" name="bill_depth" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="flipper_length_mm">Chiều dài vây (mm):</label>
+                    <input type="text" id="flipper_length_mm" name="flipper_length" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="body_mass_g">Khối lượng cơ thể (g):</label>
+                    <input type="text" id="body_mass_g" name="body_mass" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="island">Đảo:</label>
+                    <select id="island" name="island">
+                        <option value="Torgersen">Torgersen</option>
+                        <option value="Biscoe">Biscoe</option>
+                        <option value="Dream">Dream</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="sex">Giới tính:</label>
+                    <select id="sex" name="sex">
+                        <option value="male">Male</option>
+                        <option value="female">Female</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="year">Năm:</label>
+                <select id="year" name="year">
+                    <option value="2007">2007</option>
+                    <option value="2008">2008</option>
+                    <option value="2009">2009</option>
+                </select>
+            </div>
+            
+            <button type="submit">Dự Đoán</button>
+        </form>
+
+        {% if prediction_text %}
+        <div class="result-box">
+            <h3>{{ prediction_text }}</h3>
+        </div>
+        {% endif %}
+
+        {% if error %}
+        <p class="error-message">{{ error }}</p>
+        {% endif %}
+    </div>
+
+    <!-- Cột bên phải: Lịch sử dự đoán -->
+    <div class="history">
+        <h2>Lịch sử dự đoán</h2>
+        <ul class="prediction-list">
+            {% for prediction in prediction_history %}
+            <li>{{ prediction }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+</div>
+
+</body>
+</html>
